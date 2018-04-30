@@ -2,37 +2,56 @@
 var Web3 = require('web3');
 var contractJSON = require('../build/contracts/NamedRobot.json');
 var HDWalletProvider = require("truffle-hdwallet-provider");
-var mnemonic = 'gadget robust eager rabbit drum attitude power sight hazard cost real aim';
 
 //web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/9IVwUjnwncMb0oQAHHIP"));
 
-web3 = new Web3(new HDWalletProvider(mnemonic, "https://ropsten.infura.io/9IVwUjnwncMb0oQAHHIP", 0));
-web3.eth.defaultAccount = '0x9c76b879dceb4936b890127be7e4930ca9525db4';
-var MyContract = web3.eth.contract(contractJSON.abi);
-var contractInstance = MyContract.at("0xcb10c549601b37ef8f15dae65fe7ca2946f7fa3a");
+//web3 = new Web3(new HDWalletProvider(mnemonic, "https://ropsten.infura.io/9IVwUjnwncMb0oQAHHIP", 0));
+//web3.eth.defaultAccount = '0x9c76b879dceb4936b890127be7e4930ca9525db4';
+//var MyContract = web3.eth.contract(contractJSON.abi);
+//var contractInstance = MyContract.at("0xcb10c549601b37ef8f15dae65fe7ca2946f7fa3a");
+class NamedRobot{
 
+	constructor(contractInstance){
+		this.contractInstance = contractInstance
+	}
 
-module.exports.getName = function(){
-	var promise = new Promise(function(resolve, reject) {
-		contractInstance.getName(function(err, response) {
-			if (err) { return promise.reject(err)}
-			resolve(hex_to_ascii(response));
+	getName() {
+		var promise = new Promise((resolve, reject) => {
+			this.contractInstance.getName((err, response) => {
+				if (err) { return promise.reject(err)}
+				resolve(hex_to_ascii(response));
+			});
 		});
-	});
 
-	return promise;
+		return promise;
+	}
+
+	setName(newName) {
+		return new Promise((resolve, reject) => {
+			this.contractInstance.setName(newName, function(error, response) {
+				if (error) return reject(error);
+					resolve(response);
+			});
+		})
+	}
+
 };
 
-module.exports.setName = async function(newName){
-	return new Promise(function(resolve, reject) {
-		contractInstance.setName(newName, function(error, response) {
-			if (error) return reject(error);
-			resolve(response);
+
+module.exports.init = function(mnemonic){
+	return new Promise((resolve, reject) => {
+		var web3 = new Web3(new HDWalletProvider(mnemonic, "https://ropsten.infura.io/9IVwUjnwncMb0oQAHHIP", 0));
+	 	web3.eth.getAccounts(function(err, res){
+			if (err){throw err;}
+			web3.eth.defaultAccount = res[0];
+			var MyContract = web3.eth.contract(contractJSON.abi);
+			var contractInstance = MyContract.at("0xcb10c549601b37ef8f15dae65fe7ca2946f7fa3a");
+			resolve(new NamedRobot(contractInstance));
 		});
 	})
+}
 
 
-};
 
 function hex_to_ascii(str1)
  {

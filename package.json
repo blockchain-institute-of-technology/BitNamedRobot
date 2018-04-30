@@ -1,8 +1,8 @@
 {
-  "name": "pet-shop",
+  "name": "bit-named-robot",
   "version": "1.0.0",
   "description": "",
-  "main": "truffle.js",
+  "main": "src/index.js",
   "directories": {
     "test": "test"
   },
